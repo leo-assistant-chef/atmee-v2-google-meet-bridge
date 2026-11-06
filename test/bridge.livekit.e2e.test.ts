@@ -58,7 +58,7 @@ describe.skipIf(!hasLiveKit)('bridge with an avatar in a LiveKit room', () => {
     livekit = await startLiveKit();
     bundleDir = await mkdtemp(join(tmpdir(), 'atmee-bridge-test-'));
     await build({
-      entryPoints: [new URL('./fixtures/fake-avatar.entry.js', import.meta.url).pathname],
+      entryPoints: [new URL('./fixtures/fake-avatar.entry.ts', import.meta.url).pathname],
       outfile: join(bundleDir, 'fake-avatar.bundle.js'),
       bundle: true,
       format: 'iife',

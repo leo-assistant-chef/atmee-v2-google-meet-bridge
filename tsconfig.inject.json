@@ -10,5 +10,5 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["src/inject", "src/protocol.ts"]
+  "include": ["src/inject", "src/protocol.ts", "test/fixtures"]
 }
