@@ -1,0 +1,121 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Mock meeting</title>
+<!--
+  A stand-in for a meeting web client, with the affordances the Google Meet
+  adapter reads (name field, "Ask to join", "Leave call", the end-of-call
+  wording) and a real WebRTC call to the participant in the iframe.
+  ?scenario=ok|denied|invalid|blocked  &admitDelay=<ms>
+-->
+<div id="prejoin">
+  <input id="name" aria-label="Your name" placeholder="Your name" />
+  <button id="join" disabled>Ask to join</button>
+  <video id="preview" autoplay muted playsinline width="160"></video>
+</div>
+<div id="waiting" hidden>Asking to be let in…</div>
+<div id="call" hidden>
+  <span id="who"></span>
+  <button id="leave" aria-label="Leave call">Leave</button>
+</div>
+<div id="over" hidden></div>
+<iframe id="participant" src="participant.html" width="340" height="220"></iframe>
+<script>
+  const params = new URLSearchParams(location.search);
+  const scenario = params.get('scenario') || 'ok';
+  const admitDelay = Number(params.get('admitDelay') || 600);
+  const $ = (id) => document.getElementById(id);
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const participant = () => $('participant').contentWindow;
+  const state = { name: '', inCall: false, leftClicked: false };
+  let stream;
+  let pc;
+
+  const gathered = (peer) => new Promise((resolve) => {
+    if (peer.iceGatheringState === 'complete') return resolve();
+    peer.addEventListener('icegatheringstatechange', () => {
+      if (peer.iceGatheringState === 'complete') resolve();
+    });
+  });
+
+  function finish(text) {
+    state.inCall = false;
+    pc?.close();
+    $('call').hidden = true;
+    $('over').hidden = false;
+    $('over').textContent = text;
+  }
+
+  async function startCall() {
+    pc = new RTCPeerConnection();
+    pc.ontrack = (event) => {
+      if (event.track.kind !== 'audio') return;
+      const audio = new Audio();
+      audio.srcObject = new MediaStream([event.track]);
+      audio.play().catch(() => {});
+    };
+    stream.getTracks().forEach((track) => pc.addTrack(track, stream));
+    await pc.setLocalDescription(await pc.createOffer());
+    await gathered(pc);
+    const answer = await participant().acceptOffer(pc.localDescription.toJSON());
+    await pc.setRemoteDescription(answer);
+    state.inCall = true;
+  }
+
+  async function init() {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+    $('preview').srcObject = stream;
+    $('name').addEventListener('input', () => { $('join').disabled = !$('name').value; });
+    $('join').addEventListener('click', async () => {
+      state.name = $('name').value;
+      $('prejoin').hidden = true;
+      $('waiting').hidden = false;
+      await sleep(admitDelay);
+      if (scenario === 'denied') {
+        $('waiting').textContent = 'Someone in the call denied your request to join';
+        return;
+      }
+      $('waiting').hidden = true;
+      $('call').hidden = false;
+      $('who').textContent = state.name;
+      await startCall();
+    });
+    $('leave').addEventListener('click', () => {
+      state.leftClicked = true;
+      finish('You left the meeting');
+      report();
+    });
+  }
+
+  if (scenario === 'invalid') {
+    document.body.textContent = 'Check your meeting code';
+  } else if (scenario === 'blocked') {
+    document.body.textContent = "You can't join this video call";
+  } else {
+    init();
+  }
+
+  // The test drives the meeting through the fixture server, and reads what both ends measure from it.
+  function report() {
+    return fetch('/report', {
+      method: 'POST',
+      keepalive: true,
+      body: JSON.stringify({
+        ...state,
+        bridge: window.__atmeeBridge ? window.__atmeeBridge.stats() : null,
+        participant: participant().measure ? participant().measure() : null,
+      }),
+    });
+  }
+
+  setInterval(async () => {
+    try {
+      const control = await (await fetch('/control')).json();
+      participant().setSpeaking?.(Boolean(control.speaking));
+      if (state.inCall && control.ended === 'removed') finish("You've been removed from the meeting");
+      if (state.inCall && control.ended === 'ended') finish('The meeting has ended');
+      await report();
+    } catch {
+      // the server went away with the test
+    }
+  }, 300);
+</script>

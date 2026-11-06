@@ -1,0 +1,48 @@
+{
+  "name": "atmee-meet-bridge",
+  "version": "0.1.0",
+  "description": "Put an Atmee real-time video avatar into a Google Meet call",
+  "type": "module",
+  "license": "MIT",
+  "author": "leo-assistant-chef",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leo-assistant-chef/atmee-meet-bridge.git"
+  },
+  "bin": {
+    "atmee-meet-bridge": "dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.inject.json && tsc -p tsconfig.test.json",
+    "lint": "eslint .",
+    "test": "npm run build && vitest run",
+    "start": "node dist/cli.js"
+  },
+  "dependencies": {
+    "playwright": "^1.65.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.0",
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.14.0",
+    "globals": "^17.0.0",
+    "livekit-client": "^2.23.0",
+    "typescript": "~6.0.0",
+    "typescript-eslint": "^8.72.1",
+    "vitest": "^5.1.0"
+  }
+}

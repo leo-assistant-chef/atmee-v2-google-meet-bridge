@@ -1,0 +1,81 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Mock participant</title>
+<!-- The human on the other end of the mock meeting: speaks a 660 Hz tone on demand, and measures what the bot sends. -->
+<video id="remote" autoplay muted playsinline width="320"></video>
+<script>
+  const VOICE_HZ = 660;
+  const ctx = new AudioContext();
+  const voice = ctx.createOscillator();
+  voice.frequency.value = VOICE_HZ;
+  const volume = ctx.createGain();
+  volume.gain.value = 0;
+  const out = ctx.createMediaStreamDestination();
+  voice.connect(volume);
+  volume.connect(out);
+  voice.start();
+  const heard = ctx.createAnalyser();
+  heard.fftSize = 4096;
+  const video = document.getElementById('remote');
+  const canvas = document.createElement('canvas');
+  canvas.width = 64;
+  canvas.height = 36;
+  const draw = canvas.getContext('2d', { willReadFrequently: true });
+
+  const gathered = (peer) => new Promise((resolve) => {
+    if (peer.iceGatheringState === 'complete') return resolve();
+    peer.addEventListener('icegatheringstatechange', () => {
+      if (peer.iceGatheringState === 'complete') resolve();
+    });
+  });
+
+  window.setSpeaking = (on) => { volume.gain.value = on ? 0.3 : 0; };
+
+  window.acceptOffer = async (offer) => {
+    const pc = new RTCPeerConnection();
+    pc.ontrack = (event) => {
+      const media = new MediaStream([event.track]);
+      if (event.track.kind === 'video') {
+        video.srcObject = media;
+        video.play().catch(() => {});
+      } else {
+        const element = new Audio();
+        element.muted = true;
+        element.srcObject = media;
+        element.play().catch(() => {});
+        ctx.createMediaStreamSource(media).connect(heard);
+      }
+    };
+    await pc.setRemoteDescription(offer);
+    const audio = pc.getTransceivers().find((transceiver) => transceiver.receiver.track.kind === 'audio');
+    await audio.sender.replaceTrack(out.stream.getAudioTracks()[0]);
+    audio.direction = 'sendrecv';
+    await pc.setLocalDescription(await pc.createAnswer());
+    await gathered(pc);
+    return pc.localDescription.toJSON();
+  };
+
+  // What arrives from the bot: the colour at the centre of its video, and the level and pitch of its voice.
+  window.measure = () => {
+    let color = null;
+    if (video.videoWidth > 0) {
+      draw.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const [r, g, b] = draw.getImageData(canvas.width / 2, canvas.height / 2, 1, 1).data;
+      color = { r, g, b };
+    }
+    const samples = new Float32Array(heard.fftSize);
+    heard.getFloatTimeDomainData(samples);
+    const level = Math.sqrt(samples.reduce((sum, sample) => sum + sample * sample, 0) / samples.length);
+    const spectrum = new Float32Array(heard.frequencyBinCount);
+    heard.getFloatFrequencyData(spectrum);
+    let peak = 0;
+    for (let i = 1; i < spectrum.length; i++) if (spectrum[i] > spectrum[peak]) peak = i;
+    return {
+      videoWidth: video.videoWidth,
+      videoHeight: video.videoHeight,
+      color,
+      audioLevel: level,
+      audioHz: Math.round((peak * ctx.sampleRate) / heard.fftSize),
+    };
+  };
+</script>
