@@ -97,5 +97,5 @@ function install(): void {
 try {
   install();
 } catch (err) {
-  console.error('[atmanity-google-meet-bridge] could not install', err);
+  console.error('[atmee-v2-google-meet-bridge] could not install', err);
 }

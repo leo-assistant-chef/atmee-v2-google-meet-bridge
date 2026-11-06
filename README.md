@@ -1,4 +1,4 @@
-# atmanity-google-meet-bridge
+# atmee-v2-google-meet-bridge
 
 Put an [Atmee](https://www.atmee.ai) real-time video avatar into a Google Meet call.
 
@@ -51,8 +51,8 @@ Zoom is not supported yet (see [Roadmap](#roadmap)).
 Needs Node 22.12 or newer.
 
 ```bash
-git clone https://github.com/leo-assistant-chef/atmanity-google-meet-bridge
-cd atmanity-google-meet-bridge
+git clone https://github.com/leo-assistant-chef/atmee-v2-google-meet-bridge
+cd atmee-v2-google-meet-bridge
 npm install
 npx playwright install chromium     # add --with-deps on a fresh Linux machine
 npm run build
@@ -151,7 +151,7 @@ Exit codes: `0` the call ended normally, `2` bad usage, `3` could not join the m
 It is also a library:
 
 ```ts
-import { AtmeeClient, runBridge } from 'atmanity-google-meet-bridge';
+import { AtmeeClient, runBridge } from 'atmee-v2-google-meet-bridge';
 
 const result = await runBridge({
   meetingUrl: 'https://meet.google.com/abc-defg-hij',

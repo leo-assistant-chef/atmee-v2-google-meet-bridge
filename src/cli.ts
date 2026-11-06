@@ -89,7 +89,7 @@ async function main(): Promise<number> {
   } catch (err) {
     const error = err as Error;
     if (err instanceof UsageError) {
-      process.stderr.write(`${error.message}\n\nRun "atmanity-google-meet-bridge --help" for usage.\n`);
+      process.stderr.write(`${error.message}\n\nRun "atmee-v2-google-meet-bridge --help" for usage.\n`);
       return EXIT.usage;
     }
     if (err instanceof JoinError) {

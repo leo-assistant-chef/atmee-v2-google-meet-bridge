@@ -33,10 +33,10 @@ export interface JoinCommand {
 
 export type Command = JoinCommand | { command: 'help' };
 
-export const USAGE = `atmanity-google-meet-bridge: put an Atmee video avatar into a Google Meet call
+export const USAGE = `atmee-v2-google-meet-bridge: put an Atmee video avatar into a Google Meet call
 
 Usage:
-  atmanity-google-meet-bridge join <meeting-url> [options]
+  atmee-v2-google-meet-bridge join <meeting-url> [options]
 
 Avatar:
   --avatar-id <id>            Atmee avatar to bring (or ATMEE_AVATAR_ID)

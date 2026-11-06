@@ -58,4 +58,4 @@ export interface BridgeGlobal {
 
 export const EMIT_BINDING = '__atmeeBridgeEmit';
 /** Names the injected bundle in stack traces, so its own peer connections are told apart from the meeting's. */
-export const INJECT_SOURCE_NAME = 'atmanity-google-meet-bridge-inject.js';
+export const INJECT_SOURCE_NAME = 'atmee-v2-google-meet-bridge-inject.js';
