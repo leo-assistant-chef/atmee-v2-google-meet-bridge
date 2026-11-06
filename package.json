@@ -1,5 +1,5 @@
 {
-  "name": "atmee-meet-bridge",
+  "name": "atmanity-google-meet-bridge",
   "version": "0.1.0",
   "description": "Put an Atmee real-time video avatar into a Google Meet call",
   "type": "module",
@@ -7,10 +7,10 @@
   "author": "leo-assistant-chef",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/leo-assistant-chef/atmee-meet-bridge.git"
+    "url": "git+https://github.com/leo-assistant-chef/atmanity-google-meet-bridge.git"
   },
   "bin": {
-    "atmee-meet-bridge": "dist/cli.js"
+    "atmanity-google-meet-bridge": "dist/cli.js"
   },
   "exports": {
     ".": {

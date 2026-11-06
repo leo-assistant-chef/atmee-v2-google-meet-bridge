@@ -16,5 +16,5 @@ await build({
   target: 'chrome120',
   legalComments: 'none',
   // Names the bundle in stack traces: patch.ts tells its own peer connections by it.
-  footer: { js: '//# sourceURL=atmee-meet-bridge-inject.js' },
+  footer: { js: '//# sourceURL=atmanity-google-meet-bridge-inject.js' },
 });
